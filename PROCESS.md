@@ -17,3 +17,21 @@ CheckFirst: a phone-friendly web page that helps older adults check whether a me
 **Evidence.** 28554f2 (CLAUDE.md, reflect skill), #1 (CONTRACT.md and .gitignore), #2 (reflect skill fix)
 
 **Next.** Talk to people in the elderly community to really empathize with them and understand their problems. I want to find out whether other older people have the same issues, and what kinds of fears they have. One is safety: there are already a lot of apps that do what my web page is meant to do, but many of them make you give up access to your phone, call logs, message logs, and emails, which you really shouldn't do. I want to know how much older people think about that. I also want to figure out what would help them most and why: when they run into a possible scam, can they reach someone to ask, or not, and why would they need this web page? Then slowly move into prototyping: building the website, its design and layout, and the API parts.
+
+## 2026-11-15 — Design feedback from Professor Dodds
+
+**Stage:** Prototype, Test
+
+**What I did.** I made a clickable mockup prototype of the website in a Claude.ai chat and showed it to Professor Dodds. He really liked the idea. I also cleaned up my CLAUDE.md.
+
+**What I learned.** Professor Dodds pointed out that the recent checks take up a lot of space on the home page, and suggested making the check and practice sections larger and clearer. He also suggested that instead of the button, I use a slider that allows for larger text. He asked how practice mode is going to work, and whether it would work by feeding an LLM a dataset of example messages and emails and how to tell them apart.
+
+**What changed because of it.** I'm going to make the design changes he suggested, and look into datasets I can use to train an LLM for practice mode.
+
+**Working with AI.** I cleaned up CLAUDE.md: I fixed the wording, added "Follow CONTRACT.md for what the app does," and changed "Never edit anything in CONTRACT.md" to "Don't change CONTRACT.md unless I ask. Propose changes in a PR."
+
+**Evidence.** d8e3b0e (CLAUDE.md update)
+
+![Clickable prototype home screen I showed Professor Dodds](process/clickable_prototype.png)
+
+**Next.** Make the design changes, look into datasets for practice mode, and pivot to writing the code and building the website into an actual URL for design reviews.
