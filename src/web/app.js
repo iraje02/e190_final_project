@@ -187,7 +187,45 @@ function showResult(message, data) {
 
   document.getElementById("next-step").textContent = data.next_step;
   document.getElementById("pasted").textContent = message;
+  showLinks(data.links, data.link_check);
   go("result");
+}
+
+// ===== 6b. Link check (Google Safe Browsing) =====
+// The words and pill style for each result the API can return.
+const PILLS = {
+  suspected_phishing: { text: "Suspected phishing", className: "pill" },
+  suspected_malware: { text: "Suspected malware", className: "pill" },
+  no_match: { text: "Not on Google's list", className: "pill pill-sage" },
+};
+
+function showLinks(links, linkCheck) {
+  // No links in the message: hide the whole link-check area.
+  document.getElementById("link-check").hidden = links.length === 0;
+
+  // If Google couldn't be reached, say so instead of showing any results.
+  const unavailable = linkCheck === "unavailable";
+  document.getElementById("link-unavailable").hidden = !unavailable;
+  document.getElementById("link-credit").hidden = unavailable;
+
+  // One row per link: "Link check: <link>" and its pill.
+  const rows = document.getElementById("link-rows");
+  rows.innerHTML = "";
+  if (unavailable) return;
+  for (const link of links) {
+    const pill = PILLS[link.result];
+    const row = document.createElement("div");
+    row.className = "links-check";
+    const label = document.createElement("span");
+    const url = document.createElement("strong");
+    url.textContent = link.url;
+    label.append("Link check: ", url);
+    const badge = document.createElement("span");
+    badge.className = pill.className;
+    badge.textContent = pill.text;
+    row.append(label, badge);
+    rows.append(row);
+  }
 }
 
 // ===== 7. Check another message =====
