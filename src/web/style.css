@@ -238,6 +238,12 @@ textarea:focus { border-color: var(--ink); outline: none; box-shadow: 0 0 0 4px 
 .feedback-right { background: var(--sage); border: 2px solid var(--green); }
 .feedback-wrong { background: var(--rust-soft); border: 2px solid var(--rust); }
 .feedback .chip { background: var(--white); }
+.all-time { display: grid; gap: 6px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+/* ---------- Last check line on Home ---------- */
+.last-check { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 20px; font-size: .9rem; color: var(--muted); }
+.last-check strong { color: var(--ink); }
+.pill-ochre { background: var(--ochre-soft); color: var(--ochre); }
 /* Long links: let the pill drop below the link, and only break a link when it's too long for a whole line. */
 .links-check { flex-wrap: wrap; }
 .links-check strong { overflow-wrap: anywhere; }
