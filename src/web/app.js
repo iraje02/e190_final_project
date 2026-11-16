@@ -119,7 +119,7 @@ checkBtn.addEventListener("click", async () => {
     const response = await fetch("/api/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message }),
+      body: JSON.stringify({ message: message, code: deviceCode }),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -128,6 +128,7 @@ checkBtn.addEventListener("click", async () => {
       return;
     }
     showResult(message, data);
+    loadLastCheck();  // so the Home screen shows this check next time
   } catch (e) {
     // No internet, or the server didn't answer.
     showError(CHECK_FAILED);
@@ -327,7 +328,7 @@ for (const button of answerButtons) {
       const response = await fetch("/api/practice/answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: currentId, answer: button.dataset.answer }),
+        body: JSON.stringify({ id: currentId, answer: button.dataset.answer, code: deviceCode }),
       });
       if (!response.ok) throw new Error();
       showFeedback(await response.json());
@@ -386,7 +387,119 @@ function showScore() {
       ? "Great job. You spotted every one."
       : "Every message you practice makes the next real one easier to spot.";
   showPracticePart("score");
+  loadProgress();
   window.scrollTo(0, 0);
 }
 
 document.getElementById("practice-again").addEventListener("click", startPractice);
+
+// ===== 9. Device code, last check and all-time progress =====
+// No accounts: the server gives this phone a short code, and we keep it in localStorage.
+// It's sent with every check and practice answer so history belongs to this phone.
+let deviceCode = null;
+
+async function makeNewDeviceCode() {
+  try {
+    const response = await fetch("/api/devices", { method: "POST" });
+    if (!response.ok) throw new Error();
+    deviceCode = (await response.json()).code;
+    try { localStorage.setItem("deviceCode", deviceCode); } catch (e) {}
+  } catch (e) {
+    // Checks and practice still work without a code; they just aren't saved.
+    deviceCode = null;
+  }
+}
+
+// Words for each level on the "Last check" line, and the pill colour to use.
+const LAST_LEVELS = {
+  likely_scam: { text: "Likely scam", className: "pill" },
+  be_careful: { text: "Be careful", className: "pill pill-ochre" },
+  no_signs_found: { text: "No warning signs found", className: "pill pill-sage" },
+};
+
+// Turn a time into "today", "yesterday", "3 days ago" or a date.
+function whenText(iso) {
+  const then = new Date(iso);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfThen = new Date(then);
+  startOfThen.setHours(0, 0, 0, 0);
+  const days = Math.round((startOfToday - startOfThen) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return days + " days ago";
+  return then.toLocaleDateString();
+}
+
+// Show the "Last check" line on Home. It's a small extra, so while it loads or if it
+// fails, the line just stays hidden. Returns false only if the server didn't know our code.
+async function loadLastCheck() {
+  const line = document.getElementById("last-check");
+  if (!deviceCode) {
+    line.hidden = true;
+    return true;
+  }
+  try {
+    const response = await fetch("/api/checks/last?code=" + encodeURIComponent(deviceCode));
+    if (response.status === 404) return false;  // unknown code
+    if (!response.ok) throw new Error();
+    const last = await response.json();
+    if (!last) {
+      line.hidden = true;  // no checks yet
+      return true;
+    }
+    const level = LAST_LEVELS[last.level];
+    document.getElementById("last-topic").textContent = last.topic;
+    document.getElementById("last-when").textContent = whenText(last.when);
+    const pill = document.getElementById("last-level");
+    pill.textContent = level.text;
+    pill.className = level.className;
+    line.hidden = false;
+  } catch (e) {
+    line.hidden = true;
+  }
+  return true;
+}
+
+// All-time practice results on the score screen.
+async function loadProgress() {
+  const status = document.getElementById("all-time-status");
+  const scoreLine = document.getElementById("all-time-score");
+  const missedLine = document.getElementById("all-time-missed");
+  scoreLine.hidden = true;
+  missedLine.hidden = true;
+  if (!deviceCode) {
+    status.hidden = true;
+    return;
+  }
+
+  status.textContent = "Loading your all-time score…";
+  status.hidden = false;
+  try {
+    const response = await fetch("/api/progress?code=" + encodeURIComponent(deviceCode));
+    if (!response.ok) throw new Error();
+    const progress = await response.json();
+    status.hidden = true;
+    scoreLine.innerHTML = "";
+    scoreLine.append("All time: ");
+    const strong = document.createElement("strong");
+    strong.textContent = progress.correct + " of " + progress.attempted + " right";
+    scoreLine.append(strong);
+    scoreLine.hidden = false;
+    if (progress.most_missed) {
+      missedLine.textContent = "You most often miss: " + progress.most_missed + ".";
+      missedLine.hidden = false;
+    }
+  } catch (e) {
+    status.textContent = "Sorry, I couldn't load your all-time score right now.";
+  }
+}
+
+// When the page opens: use the saved code if the server knows it, otherwise get a new one.
+async function setUpDevice() {
+  try { deviceCode = localStorage.getItem("deviceCode"); } catch (e) {}
+  if (deviceCode && await loadLastCheck()) return;
+  await makeNewDeviceCode();
+}
+
+setUpDevice();

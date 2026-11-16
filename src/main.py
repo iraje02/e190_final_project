@@ -2,20 +2,84 @@ import json
 import os
 import random
 import re
+import secrets
+from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 app = FastAPI()
 
 # Folder that holds the HTML, CSS and JavaScript for the page.
 WEB_DIR = Path(__file__).parent / "web"
+
+# ----- Database -----
+# Locally we use a SQLite file. On Railway, DATABASE_URL points at Railway's Postgres.
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///checkfirst.db")
+# Some hosts write "postgres://", but SQLAlchemy only understands "postgresql://".
+DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+if DATABASE_URL.startswith("sqlite"):
+    # SQLite needs this so FastAPI's worker threads can share the connection.
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL)
+
+
+def utc_now():
+    """The time now in UTC, with the timezone attached (SQLModel requires it)."""
+    return datetime.now(timezone.utc)
+
+
+class Device(SQLModel, table=True):
+    code: str = Field(primary_key=True)
+    created_at: datetime = Field(default_factory=utc_now)
+
+
+class Check(SQLModel, table=True):
+    # Never the text of the message: only when, how risky, and a short topic.
+    id: Optional[int] = Field(default=None, primary_key=True)
+    device_code: Optional[str] = Field(default=None, index=True)
+    created_at: datetime = Field(default_factory=utc_now)
+    level: str
+    topic: str
+    link_check: str
+    input_tokens: Optional[int] = None
+    output_tokens: Optional[int] = None
+
+
+class PracticeAttempt(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    device_code: Optional[str] = Field(default=None, index=True)
+    item_id: int
+    answer: str
+    correct: bool
+    missed_signs: str = ""  # the item's signs, comma-separated, only when they got it wrong
+    created_at: datetime = Field(default_factory=utc_now)
+
+
+# Make any missing tables when the app starts. If the database is down, log it and
+# keep going, so checks and practice still work (they just won't be saved).
+try:
+    SQLModel.metadata.create_all(engine)
+except Exception as error:
+    print(f"Database setup failed: {error!r}")
+
+
+def save_row(row):
+    """Save one row. A failed save is logged but never breaks the request."""
+    try:
+        with Session(engine) as session:
+            session.add(row)
+            session.commit()
+    except Exception as error:
+        print(f"Database write failed: {error!r}")
 
 GLASSROOM_URL = "https://litellm.glassroomai.com/v1"
 MODEL = "claude-haiku-4-5"
@@ -41,6 +105,7 @@ Rules:
 - Give exactly one next step the person can do right now.
 - If the message asks for money, gift cards, passwords, codes or personal information, the next step must tell them to contact the company using a phone number they already trust, not one in the message.
 - Use plain, everyday words. No jargon. Write to the person as "you".
+- Give a topic: a short label of 6 words or fewer, like "Text about a package" or "Email about a bank account". No names, numbers, links or personal details.
 
 The user's turn may also include <link_check> with Google Safe Browsing results for the links in the message:
 - A link "flagged as phishing" or "flagged as malware" means the message is likely_scam.
@@ -133,14 +198,17 @@ RESULT_SCHEMA = {
         "level": {"type": "string", "enum": ["likely_scam", "be_careful", "no_signs_found"]},
         "reasons": {"type": "array", "items": {"type": "string"}},
         "next_step": {"type": "string"},
+        "topic": {"type": "string"},
     },
-    "required": ["level", "reasons", "next_step"],
+    "required": ["level", "reasons", "next_step", "topic"],
     "additionalProperties": False,
 }
 
 
-class CheckRequest(BaseModel):
+# Request bodies. SQLModel without table=True works like a plain Pydantic model.
+class CheckRequest(SQLModel):
     message: str = Field(max_length=10000)
+    code: Optional[str] = None  # the device code saved on the phone
 
 
 @app.get("/")
@@ -201,6 +269,8 @@ def check(body: CheckRequest):
             raise ValueError("unknown level")
         if not 2 <= len(result["reasons"]) <= 3 or not result["next_step"].strip():
             raise ValueError("answer is missing reasons or a next step")
+        # Keep the topic short even if the model goes over 6 words.
+        result["topic"] = " ".join(result["topic"].split()[:6]) or "Message"
     except Exception as error:
         # Any failure (no key, network, bad JSON) gets the same plain message.
         print(f"Check failed: {error!r}")
@@ -212,7 +282,48 @@ def check(body: CheckRequest):
 
     result["links"] = [{"url": link, "result": link_results[link]} for link in links]
     result["link_check"] = link_check
+
+    # 4. Save when, how risky and the topic (never the message itself). If this fails, the result still shows.
+    usage = resp.usage  # how many tokens the model read and wrote, for keeping an eye on cost
+    save_row(Check(
+        device_code=body.code,
+        level=result["level"],
+        topic=result["topic"],
+        link_check=link_check,
+        input_tokens=usage.prompt_tokens if usage else None,
+        output_tokens=usage.completion_tokens if usage else None,
+    ))
     return result
+
+
+# ----- Device codes and history -----
+@app.post("/api/devices")
+def new_device():
+    # A short random code like "a3f9c21b". No account, no name, nothing personal.
+    device = Device(code=secrets.token_hex(4))
+    try:
+        with Session(engine) as session:
+            session.add(device)
+            session.commit()
+            return {"code": device.code}
+    except Exception as error:
+        print(f"Database write failed: {error!r}")
+        raise HTTPException(status_code=503, detail="Sorry, something went wrong. Please try again.")
+
+
+@app.get("/api/checks/last")
+def last_check(code: str):
+    with Session(engine) as session:
+        if session.get(Device, code) is None:
+            # The page uses this 404 to know it should ask for a new code.
+            raise HTTPException(status_code=404, detail="Unknown device code.")
+        check = session.exec(
+            select(Check).where(Check.device_code == code).order_by(Check.created_at.desc())
+        ).first()
+    if check is None:
+        return None
+    # The time ends in "+00:00" (UTC), so the browser can show it in the person's own time.
+    return {"topic": check.topic, "level": check.level, "when": check.created_at.isoformat()}
 
 
 # ----- Practice mode -----
@@ -237,9 +348,22 @@ for example in PRACTICE_EXAMPLES:
             raise ValueError(f"Practice example {example['id']} has an unknown sign: {sign}")
 
 
-class PracticeAnswer(BaseModel):
+# The same signs, worded to finish "You most often miss: ..." on the score screen.
+MISSED_LABELS = {
+    "urgency": "messages that rush you",
+    "money_request": "messages that ask for money",
+    "suspicious_link": "messages with suspicious links",
+    "wrong_sender": "messages from the wrong sender",
+    "asks_for_code_or_password": "messages that ask for a code or password",
+    "too_good_to_be_true": "offers that are too good to be true",
+    "secrecy": "messages that ask you to keep a secret",
+}
+
+
+class PracticeAnswer(SQLModel):
     id: int
     answer: Literal["scam", "not_scam"]
+    code: Optional[str] = None  # the device code saved on the phone
 
 
 @app.get("/api/practice/next")
@@ -268,11 +392,41 @@ def practice_answer(body: PracticeAnswer):
         raise HTTPException(status_code=404, detail="Sorry, I couldn't find that practice message.")
 
     said_scam = body.answer == "scam"
+    correct = said_scam == example["is_scam"]
+
+    # Remember the attempt. If they got it wrong, note which signs they missed.
+    save_row(PracticeAttempt(
+        device_code=body.code,
+        item_id=body.id,
+        answer=body.answer,
+        correct=correct,
+        missed_signs="" if correct else ",".join(example["signs"]),
+    ))
+
     return {
-        "correct": said_scam == example["is_scam"],
+        "correct": correct,
         "is_scam": example["is_scam"],
         "signs": [SIGN_LABELS[sign] for sign in example["signs"]],
         "explanation": example["explanation"],
+    }
+
+
+@app.get("/api/progress")
+def progress(code: str):
+    with Session(engine) as session:
+        attempts = session.exec(select(PracticeAttempt).where(PracticeAttempt.device_code == code)).all()
+
+    # Count every missed sign across all attempts, then pick the most common one.
+    missed = Counter()
+    for attempt in attempts:
+        if attempt.missed_signs:
+            missed.update(attempt.missed_signs.split(","))
+    most_missed = MISSED_LABELS[missed.most_common(1)[0][0]] if missed else None
+
+    return {
+        "attempted": len(attempts),
+        "correct": sum(1 for attempt in attempts if attempt.correct),
+        "most_missed": most_missed,
     }
 
 

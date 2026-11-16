@@ -101,6 +101,11 @@
           <span class="go">Start practicing <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
         </button>
       </div>
+      <!-- Shown only when this phone has checked a message before. app.js fills it in. -->
+      <p id="last-check" class="last-check" hidden>
+        <span>Last check: <strong id="last-topic"></strong> · <span id="last-when"></span></span>
+        <span id="last-level" class="pill"></span>
+      </p>
     </div>
   </section>
 
@@ -341,6 +346,12 @@
       <p class="eyebrow">All done</p>
       <h2 id="score-title" style="font-size:1.8rem;margin-top:8px"></h2>
       <p id="score-note" style="margin-top:10px;color:var(--muted)"></p>
+      <!-- All-time progress from the database. app.js fills these in. -->
+      <div class="all-time">
+        <p id="all-time-status" role="status" style="color:var(--muted)" hidden></p>
+        <p id="all-time-score" hidden></p>
+        <p id="all-time-missed" hidden></p>
+      </div>
       <div class="hero-actions">
         <button id="practice-again" class="btn btn-primary">Practice again</button>
         <button class="btn btn-ghost" data-go="home">Back to home</button>
