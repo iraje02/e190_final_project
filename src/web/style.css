@@ -216,3 +216,12 @@ textarea:focus { border-color: var(--ink); outline: none; box-shadow: 0 0 0 4px 
 .paste-note { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--sage); font-size: .9rem; }
 .btn:disabled { opacity: .6; cursor: progress; }
 .todo .money-rule { margin-top: 14px; font-size: .9rem; color: #CBD6CE; }
+
+/* Phones and small screens: show the three nav buttons as their own row under the logo,
+   three equal columns, with text allowed to wrap so they fit side by side. */
+@media (max-width: 999px) {
+  .nav .wrap { flex-wrap: wrap; padding-top: 12px; }
+  .nav-links { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; gap: 8px; padding-bottom: 10px; }
+  .nav-links button { justify-content: center; padding: 6px 8px; font-size: .75rem; white-space: normal; text-align: center; line-height: 1.2; }
+  .nav-links svg { display: none; }
+}
