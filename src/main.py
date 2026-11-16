@@ -1,10 +1,11 @@
 import json
+import os
 from pathlib import Path
 
-import anthropic
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from openai import OpenAI
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -12,7 +13,8 @@ app = FastAPI()
 # Folder that holds the HTML, CSS and JavaScript for the page.
 WEB_DIR = Path(__file__).parent / "web"
 
-MODEL = "claude-opus-5-5"
+GLASSROOM_URL = "https://litellm.glassroomai.com/v1"
+MODEL = "claude-haiku-4-5"
 
 # Shown whenever the model call fails or sends back something we can't use (CONTRACT.md rule 4).
 CHECK_FAILED = (
@@ -70,26 +72,25 @@ def check(body: CheckRequest):
         raise HTTPException(status_code=400, detail="Please paste a message first.")
 
     try:
-        # Anthropic() reads the key from the ANTHROPIC_API_KEY environment variable.
-        client = anthropic.Anthropic()
-        response = client.beta.messages.create(
+        # Glassroom speaks the OpenAI API, so we use the OpenAI SDK pointed at it.
+        # The key comes from the GLASSROOM_API_KEY environment variable.
+        client = OpenAI(base_url=GLASSROOM_URL, api_key=os.environ["GLASSROOM_API_KEY"])
+        resp = client.chat.completions.create(
             model=MODEL,
-            max_tokens=16000,
-            output_config={
-                "effort": "medium",
-                "format": {"type": "json_schema", "schema": RESULT_SCHEMA},
+            max_tokens=1024,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {"name": "check_result", "schema": RESULT_SCHEMA},
             },
-            # If the model declines, the API retries on a fallback model it picks.
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": f"<message>\n{message}\n</message>"}],
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"<message>\n{message}\n</message>"},
+            ],
         )
-        if response.stop_reason == "refusal":
-            raise ValueError("model declined")
 
-        text = next(block.text for block in response.content if block.type == "text")
-        result = json.loads(text)
+        result = json.loads(resp.choices[0].message.content)
+        if result["level"] not in ("likely_scam", "be_careful", "no_signs_found"):
+            raise ValueError("unknown level")
         if not 2 <= len(result["reasons"]) <= 3 or not result["next_step"].strip():
             raise ValueError("answer is missing reasons or a next step")
     except Exception as error:
