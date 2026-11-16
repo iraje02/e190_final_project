@@ -20,4 +20,5 @@ For deployment we use a Dockerfile at the repo root, on Railway, with Railway's 
 - Don't change CONTRACT.md unless I ask. Propose changes in a PR.
 
 ## Mistakes to avoid
-empty for now
+- The LLM goes through Glassroom with the OpenAI SDK (base_url + GLASSROOM_API_KEY). Never use the Anthropic SDK directly
+- Locally the app uses SQLite, so Postgres problems only show up on Railway. After adding or changing a database package, check it works with a Postgres URL before merging.
