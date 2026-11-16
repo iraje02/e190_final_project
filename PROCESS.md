@@ -53,3 +53,19 @@ CheckFirst: a phone-friendly web page that helps older adults check whether a me
 ![First live version, before the redesign](process/initial_website_deployment.png)
 
 **Next.** Add the database and the last-check line, add Safe Browsing, and then test and ask others for feedback on how the website is looking.
+
+## 2026-11-15 — Finishing the core of the app
+
+**Stage:** building, Test
+
+**What I did.** Tonight I finished the core of the app. I added Google Safe Browsing to the check (#11): it pulls the links out of a message, checks them against Google's list, and gives the result to the model. If a link is flagged, the result is always "Likely scam." Then I built practice mode (#12) with 12 example messages, 8 scams and 4 real ones. The answer stays on the server so it can't be seen in the browser. Then I added the database (#13): a device code saved on the phone, a table for checks with no message text saved (just the level, a short topic, and token counts), and a table for practice attempts. The home page now shows the last check, and practice shows an all-time score.
+
+**What I learned.** Testing showed why I need both Safe Browsing and the LLM: my fake package link wasn't on Google's list, but the LLM still caught it from the wording. After merging the database, the Railway deploy crashed with "No module named psycopg." It worked on my laptop because locally the app uses SQLite, so it never needed a Postgres driver. Newer SQLAlchemy expects psycopg 3, not the older psycopg2 driver I had installed.
+
+**What changed because of it.** I swapped the Postgres driver in requirements.txt from psycopg2-binary to psycopg 3 (#14), and the practice data and checks now survive a redeploy. I also changed how I think about practice mode since talking to Professor Dodds: instead of training an LLM on a dataset, the plan is to give the model a few of my examples as a pattern and have it write new messages aimed at the signs each person misses.
+
+**Working with AI.** I added two lessons to CLAUDE.md under "Mistakes to avoid": the LLM goes through Glassroom with the OpenAI SDK, never the Anthropic SDK directly, and because the app uses SQLite locally, any database package change has to be checked with a Postgres URL before merging.
+
+**Evidence.** #11 (Safe Browsing), #12 (practice mode), #13 (database), #14 (psycopg 3 driver fix), 1a8557c (CLAUDE.md mistakes to avoid)
+
+**Next.** Test the live site with older adults (the paste test and practice mode), have the LLM write practice messages, and start the cost-benefit analysis using the token counts.
