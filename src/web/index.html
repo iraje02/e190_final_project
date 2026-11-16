@@ -1,99 +1,299 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CheckFirst</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CheckFirst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<div class="page">
-  <p class="band">Check before you click</p>
-  <header class="header"><span class="logo">CheckFirst</span></header>
 
-  <!-- ===== SCREEN 1: HOME ===== -->
-  <div id="home-screen">
-    <div class="text-size">
-      <label for="textsize">Text size</label>
-      <span class="small-a" aria-hidden="true">A</span>
-      <input id="textsize" type="range" min="18" max="30" step="2" value="20">
-      <span class="big-a" aria-hidden="true">A</span>
+<!-- ===================== SHARED HEADER ===================== -->
+<div class="notice-bar"><div class="wrap">
+  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/></svg>
+  Free to use. We never read your inbox or save your messages.
+</div></div>
+
+<header class="nav">
+  <div class="wrap">
+    <button class="logo" data-go="home" aria-label="CheckFirst home">
+      <span class="logo-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4F1EA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+      </span>
+      CheckFirst
+    </button>
+    <nav class="nav-links" aria-label="Main">
+      <button class="nav-primary" data-go="check">Check a message <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+      <button data-go="practice">Practice</button>
+      <button data-go="home" data-scroll="how">How it works</button>
+    </nav>
+    <div class="size-control size-desktop">
+      <label for="size-d" class="sr-only">Text size</label>
+      <span style="font-size:14px" aria-hidden="true">A</span>
+      <input id="size-d" type="range" min="18" max="30" step="2" value="20">
+      <span style="font-size:24px" aria-hidden="true">A</span>
     </div>
-    <main class="content">
+  </div>
+  <div class="wrap size-mobile">
+    <label for="size-m">Text size</label>
+    <span style="font-size:14px;font-weight:700" aria-hidden="true">A</span>
+    <input id="size-m" type="range" min="18" max="30" step="2" value="20">
+    <span style="font-size:26px;font-weight:700" aria-hidden="true">A</span>
+  </div>
+</header>
+
+<!-- ===================== VIEW 1: HOME ===================== -->
+<main id="view-home">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
       <div>
-        <h1>Not sure about a message?</h1>
-        <p class="lead" style="margin-top: 8px">Check it here first. It only takes a minute.</p>
+        <p class="eyebrow">Scam checker for texts and emails</p>
+        <h1>Not sure about a message? <em>Check it first.</em></h1>
+        <p class="hero-lead">Paste a text or email and get a clear, plain-language answer in seconds: is it a scam, and what should you do next?</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-go="check">
+            Check a message
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </button>
+          <button class="btn btn-ghost" data-scroll="practice">Practice spotting scams</button>
+        </div>
+        <div class="trust">
+          <span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg>No sign-up</span>
+          <span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg>No access to your phone</span>
+          <span><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg>Messages aren't saved</span>
+        </div>
       </div>
-      <button id="go-check" class="task task-check">
-        <span class="task-top">
-          <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg>
-          <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
-        </span>
-        <span class="task-title">Is this a scam?</span>
-        <span class="task-sub">Paste a text or email and I'll check it for you.</span>
-      </button>
-      <button class="task task-practice" disabled>
-        <span class="task-top">
-          <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
-        </span>
-        <span class="task-title">Practice</span>
-        <span class="task-sub">Coming soon.</span>
-      </button>
-    </main>
-  </div>
 
-  <!-- ===== SCREEN 2: CHECK (paste) ===== -->
-  <div id="check-screen" hidden>
-    <main class="content">
-      <button class="back" data-home>
-        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M20 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Home
-      </button>
-      <h1>Is this a scam?</h1>
-      <label class="label" for="msg">Paste the message here</label>
-      <textarea id="msg" rows="7" placeholder="Your message will appear here"></textarea>
-      <button id="paste-btn" class="btn btn-outline">Paste what I copied
-        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="6" y="4" width="12" height="17"/><path d="M9 4V2.5h6V4"/></svg>
-      </button>
-      <p id="paste-notice" class="notice" role="status" hidden>Your phone didn't let me paste. Press and hold inside the box above, then tap <strong>Paste</strong>.</p>
-      <p id="check-error" class="error" role="alert" hidden></p>
-      <button id="check-btn" class="btn btn-primary"><span id="check-btn-text">Check this message</span>
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
-      </button>
-      <p class="hint">To copy a text message: press and hold on the message, then tap <strong>Copy</strong>.</p>
-    </main>
-  </div>
-
-  <!-- ===== SCREEN 3: RESULT ===== -->
-  <div id="result-screen" hidden>
-    <div style="padding: 0 24px"><button class="back" data-home>← Home</button></div>
-    <div id="result-box" class="result" role="status">
-      <p id="result-kicker" class="result-kicker"></p>
-      <p id="result-headline" class="result-headline"></p>
-      <p id="result-line" class="result-line"></p>
+      <!-- A picture of an example scam text, so the highlights here are part of the drawing. -->
+      <div class="phone-scene" aria-hidden="true">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-top"><div class="avatar">?</div><small>+1 (833) 555-0142</small></div>
+            <div class="bubble">Your package could not be delivered. Pay a $1.99 redelivery fee <mark>within 24 hours</mark>: <mark>parcel-redelivery-help.co/pay</mark></div>
+          </div>
+        </div>
+        <div class="tag tag-1"><i></i>Rushes you</div>
+        <div class="tag tag-2"><i></i>Fake link</div>
+        <div class="verdict">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5"/><path d="M12 18h.01"/></svg>
+          This looks like a scam
+        </div>
+      </div>
     </div>
-    <main class="content" style="gap: 24px">
-      <div>
-        <h2>The message you pasted</h2>
-        <p id="pasted" class="pasted"></p>
+  </section>
+
+  <section class="section" id="practice" style="padding-top: 0">
+    <div class="wrap">
+      <div class="tasks">
+        <button class="task task-check" data-go="check">
+          <span class="task-icon"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F4F1EA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>
+          <h3>Is this a scam?</h3>
+          <p>Paste a text message or email. CheckFirst looks for warning signs and checks any links.</p>
+          <span class="go">Check a message <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
+        </button>
+        <button class="task task-practice" data-go="practice">
+          <span class="task-icon"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8E3A12" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>
+          <h3>Practice</h3>
+          <p>Safe example messages, one at a time. Learn the signs so you can spot scams on your own.</p>
+          <span class="go">Start practicing <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></span>
+        </button>
       </div>
+    </div>
+  </section>
+
+  <section class="section" id="how" style="padding-top: 16px">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps. About a minute.</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><h3>Copy the message</h3><p>Press and hold on the text or email, then tap Copy.</p></div>
+        <div class="step"><div class="step-num">2</div><h3>Paste it here</h3><p>Paste it into CheckFirst. Only what you paste is checked.</p></div>
+        <div class="step"><div class="step-num">3</div><h3>Get a clear answer</h3><p>See the warning signs we found and one safe thing to do next.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section band">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Know the signs</p>
+        <h2>Scams people are getting right now</h2>
+        <p>The details change, but most scams ask for the same things: send money, share a code, or enter a password right away.</p>
+      </div>
+      <div class="scams">
+        <article class="scam">
+          <span class="scam-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></span>
+          <h3>Missed delivery</h3>
+          <p class="quote">"Pay a small fee to get your package."</p>
+          <p>Delivery companies don't ask for fees by text.</p>
+        </article>
+        <article class="scam">
+          <span class="scam-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></span>
+          <h3>Unpaid toll</h3>
+          <p class="quote">"Pay now to avoid a late fee."</p>
+          <p>Real toll bills come by mail or in the official app.</p>
+        </article>
+        <article class="scam">
+          <span class="scam-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></span>
+          <h3>Account locked</h3>
+          <p class="quote">"Verify your password in 12 hours."</p>
+          <p>Real companies never ask for your password by email.</p>
+        </article>
+        <article class="scam">
+          <span class="scam-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3D6A4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+          <h3>Family emergency</h3>
+          <p class="quote">"It's me, I'm in trouble. Don't tell Mom."</p>
+          <p>Call them on their usual number before you send anything.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== VIEW 2: CHECK ===================== -->
+<main id="view-check" hidden>
+  <div class="wrap page">
+    <button class="back" data-go="home">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Back to home
+    </button>
+    <h1 class="page-title">Is this a scam?</h1>
+    <p class="page-lead">Paste the text or email below. Include who it's from if you can see it.</p>
+
+    <div class="check-grid">
+      <div class="card">
+        <label class="field-label" for="msg">Paste the message here</label>
+        <textarea id="msg" placeholder="Press and hold here, then tap Paste"></textarea>
+        <div class="check-actions">
+          <button id="paste-btn" class="btn btn-ghost">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1"/></svg>
+            Paste what I copied
+          </button>
+          <button id="check-btn" class="btn btn-primary">
+            <span id="check-label">Check this message</span>
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <p id="paste-note" class="paste-note" role="status" hidden>Your phone didn't let me paste. Press and hold inside the box, then tap <strong>Paste</strong>.</p>
+        <p id="check-error" class="form-error" role="alert" hidden></p>
+        <p class="small-note">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          Only what you paste is checked. The words are never saved.
+        </p>
+      </div>
+
+      <aside class="card-flat aside" aria-labelledby="howto-title">
+        <h2 id="howto-title">How to copy a message</h2>
+        <div class="tabs" role="tablist" aria-label="Type of message">
+          <button class="tab" role="tab" id="tab-text" aria-controls="panel-text" aria-selected="true">Text message</button>
+          <button class="tab" role="tab" id="tab-email" aria-controls="panel-email" aria-selected="false">Email</button>
+        </div>
+        <ol class="howto" id="panel-text" role="tabpanel" aria-labelledby="tab-text">
+          <li><b>1</b><span>Open the text message you're unsure about.</span></li>
+          <li><b>2</b><span>Press and hold on the message until a menu appears.</span></li>
+          <li><b>3</b><span>Tap <strong>Copy</strong>, then come back here and tap <strong>Paste what I copied</strong>.</span></li>
+        </ol>
+        <ol class="howto" id="panel-email" role="tabpanel" aria-labelledby="tab-email" hidden>
+          <li><b>1</b><span>Open the email you're unsure about.</span></li>
+          <li><b>2</b><span>Tap the sender's name to see their full email address. Copy it too if you can.</span></li>
+          <li><b>3</b><span>Press and hold on the words of the email, tap <strong>Select All</strong>, then <strong>Copy</strong>.</span></li>
+          <li><b>4</b><span>Come back here and tap <strong>Paste what I copied</strong>.</span></li>
+        </ol>
+        <div class="looks">
+          <h3>What CheckFirst looks for</h3>
+          <div class="chips">
+            <span class="chip">Rushing you</span>
+            <span class="chip">Asks for money</span>
+            <span class="chip">Odd links</span>
+            <span class="chip">Wrong sender</span>
+            <span class="chip">Asks for codes or passwords</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ===================== VIEW 3: RESULT ===================== -->
+<main id="view-result" hidden>
+  <div class="wrap page">
+    <button class="back" data-again>
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Check another message
+    </button>
+
+    <!-- app.js swaps the class (v-likely, v-careful or v-none) and fills the title and sub-line. -->
+    <div id="verdict" class="verdict-card" role="status">
+      <span class="icon">
+        <!-- Warning triangle for "Likely scam" and "Be careful"; magnifying glass for "No warning signs found". -->
+        <!-- Each icon sits in a <span> because .hidden works on HTML elements but not on <svg>. -->
+        <span id="icon-warning"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5"/><path d="M12 18h.01"/></svg></span>
+        <span id="icon-search" hidden><svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span>
+      </span>
       <div>
-        <h2>Why I think so</h2>
+        <p class="eyebrow" style="color:inherit;opacity:.85">Result</p>
+        <h1 id="verdict-title" style="margin-top:6px"></h1>
+        <p id="verdict-sub" class="sub" style="margin-top:8px"></p>
+      </div>
+    </div>
+
+    <div class="result-grid">
+      <div class="card">
+        <h2 id="reasons-title" style="font-size:1.3rem">Warning signs found</h2>
         <ol id="reasons" class="reasons"></ol>
+        <!-- Shown only when the API returns link results (after Safe Browsing is added). -->
+        <div id="link-check" hidden>
+          <div class="links-check">
+            <span>Link check: <strong id="link-domain"></strong></span>
+            <span class="pill">Suspected phishing</span>
+          </div>
+          <p style="margin-top:8px;font-size:.75rem;color:var(--muted)">Advisory provided by Google.</p>
+        </div>
       </div>
-      <div class="todo">
-        <h2>What to do</h2>
-        <p id="next-step"></p>
-        <p class="money-rule">Never send money, gift cards, passwords or codes because a message asks. If you're not sure, call the company using a phone number you already trust, not one in the message.</p>
+
+      <div style="display:grid;gap:20px">
+        <div class="todo">
+          <h2>What to do</h2>
+          <p id="next-step"></p>
+          <!-- Always shown, so the contract's money rule never depends on the AI remembering it. -->
+          <p class="money-rule">Never send money, gift cards, passwords or codes because a message asks. If you're not sure, call the company using a phone number you already trust, not one in the message.</p>
+          <button class="btn btn-block" data-again>Check another message</button>
+        </div>
+        <div class="card-flat">
+          <h2 style="font-size:1rem">The message you pasted</h2>
+          <p id="pasted" class="pasted"></p>
+        </div>
       </div>
-      <p class="hint">This is a computer's best guess, and it can be wrong. When in doubt, ask someone you trust.</p>
-      <button id="again-btn" class="btn btn-primary">Check another message
-        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
-      </button>
-    </main>
+    </div>
+
+    <p class="disclaimer">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+      This is a computer's best guess, and it can be wrong. When in doubt, ask someone you trust.
+    </p>
   </div>
-</div>
+</main>
+
+<!-- ===================== VIEW 4: PRACTICE (placeholder) ===================== -->
+<main id="view-practice" hidden>
+  <div class="wrap page">
+    <button class="back" data-go="home">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Back to home
+    </button>
+    <h1 class="page-title">Practice — coming soon</h1>
+    <p class="page-lead">Soon you'll be able to practice spotting scams with safe example messages, one at a time.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong style="color:var(--ink)">CheckFirst</strong> is a student project at Harvey Mudd College.</p>
+  </div>
+</footer>
+
 <script src="/static/app.js"></script>
 </body>
 </html>

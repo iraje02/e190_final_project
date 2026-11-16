@@ -1,82 +1,99 @@
-// ===== Screens =====
-const screens = {
-  home: document.getElementById("home-screen"),
-  check: document.getElementById("check-screen"),
-  result: document.getElementById("result-screen"),
-};
+// ===== 1. Screens =====
+// Each screen is a <main id="view-..."> in index.html. Only one is shown at a time.
+const VIEWS = ["home", "check", "result", "practice"];
 
-function show(name) {
-  for (const key in screens) {
-    screens[key].hidden = key !== name;
+function go(name, scrollId) {
+  for (const view of VIEWS) {
+    document.getElementById("view-" + view).hidden = view !== name;
   }
-  window.scrollTo(0, 0);
+
+  // Outline the nav button for the screen we're on (but not "How it works", which only scrolls).
+  for (const button of document.querySelectorAll(".nav-links button")) {
+    if (button.dataset.go === name && !button.dataset.scroll) {
+      button.setAttribute("aria-current", "page");
+    } else {
+      button.removeAttribute("aria-current");
+    }
+  }
+
+  // Scroll to a section if one was asked for, otherwise to the top.
+  if (scrollId) {
+    document.getElementById(scrollId).scrollIntoView({ behavior: "smooth" });
+  } else {
+    window.scrollTo(0, 0);
+  }
 }
 
-document.getElementById("go-check").addEventListener("click", () => show("check"));
-for (const button of document.querySelectorAll("[data-home]")) {
-  button.addEventListener("click", () => show("home"));
-}
+// Any button with data-go="screen" or data-scroll="section-id" moves around the page.
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-go], [data-scroll]");
+  if (button) {
+    go(button.dataset.go || "home", button.dataset.scroll);
+  }
+});
 
-// ===== Text-size slider =====
-const slider = document.getElementById("textsize");
+// ===== 2. Text size =====
+// One slider shows on phones and one on laptops. Moving either changes the
+// whole page's text size and keeps the other slider in step.
+const sliders = [document.getElementById("size-d"), document.getElementById("size-m")];
 
 function setTextSize(px) {
   document.documentElement.style.setProperty("--text-size", px + "px");
+  for (const slider of sliders) {
+    slider.value = px;
+  }
 }
 
-slider.addEventListener("input", () => {
-  setTextSize(slider.value);
-  try { localStorage.setItem("textSize", slider.value); } catch (e) {}
-});
+for (const slider of sliders) {
+  slider.addEventListener("input", () => {
+    setTextSize(slider.value);
+    try { localStorage.setItem("textSize", slider.value); } catch (e) {}
+  });
+}
 
-// Use the size saved on this phone last time, if there is one.
+// Use the size saved on this device last time, if there is one.
 try {
   const saved = localStorage.getItem("textSize");
-  if (saved) {
-    slider.value = saved;
-    setTextSize(saved);
-  }
+  if (saved) setTextSize(saved);
 } catch (e) {}
 
-// ===== Paste button =====
+// ===== 3. Text message / Email tabs =====
+const tabs = document.querySelectorAll(".tab");
+
+for (const tab of tabs) {
+  tab.addEventListener("click", () => {
+    for (const other of tabs) {
+      const isThisOne = other === tab;
+      other.setAttribute("aria-selected", String(isThisOne));
+      document.getElementById(other.getAttribute("aria-controls")).hidden = !isThisOne;
+    }
+  });
+}
+
+// ===== 4. Paste button =====
 const msg = document.getElementById("msg");
-const pasteNotice = document.getElementById("paste-notice");
+const pasteNote = document.getElementById("paste-note");
 
 document.getElementById("paste-btn").addEventListener("click", async () => {
-  pasteNotice.hidden = true;
   try {
     msg.value = await navigator.clipboard.readText();
+    pasteNote.hidden = true;
   } catch (e) {
-    // Some phones block reading the clipboard; tell them how to paste by hand.
-    pasteNotice.hidden = false;
+    // Some phones block reading the clipboard, so explain how to paste by hand.
+    pasteNote.hidden = false;
   }
 });
 
-// ===== Check this message =====
-const checkBtn = document.getElementById("check-btn");
-const checkBtnText = document.getElementById("check-btn-text");
-const checkError = document.getElementById("check-error");
+// Once there's text in the box, the "how to paste" note isn't needed.
+msg.addEventListener("input", () => {
+  if (msg.value.trim()) pasteNote.hidden = true;
+});
 
-const LEVELS = {
-  likely_scam: {
-    boxClass: "result-likely",
-    kicker: "Result · Likely scam",
-    headline: "This looks like a scam",
-    line: "Please don't tap any links or reply.",
-  },
-  be_careful: {
-    boxClass: "result-careful",
-    kicker: "Result · Be careful",
-    headline: "Be careful with this one",
-    line: "Check before you do anything it asks.",
-  },
-  no_signs_found: {
-    boxClass: "result-none",
-    kicker: "Result · No signs found",
-    headline: "No warning signs found",
-    line: "That doesn't mean it's safe for sure.",
-  },
-};
+// ===== 5. Check this message =====
+const CHECK_FAILED = "Sorry, I couldn't check this message right now. Please try again in a minute. Until then, don't tap any links or reply.";
+const checkBtn = document.getElementById("check-btn");
+const checkLabel = document.getElementById("check-label");
+const checkError = document.getElementById("check-error");
 
 function showError(text) {
   checkError.textContent = text;
@@ -91,9 +108,9 @@ checkBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Loading state: the button says "Checking…" and can't be tapped twice.
+  // Loading state: the button says "Checking…" and can't be tapped again.
   checkBtn.disabled = true;
-  checkBtnText.textContent = "Checking…";
+  checkLabel.textContent = "Checking…";
 
   try {
     const response = await fetch("/api/check", {
@@ -103,45 +120,82 @@ checkBtn.addEventListener("click", async () => {
     });
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(typeof data.detail === "string" ? data.detail : "");
+      // The server sends its plain-language error in "detail".
+      showError(typeof data.detail === "string" ? data.detail : CHECK_FAILED);
+      return;
     }
     showResult(message, data);
   } catch (e) {
-    showError(e.message || "Sorry, I couldn't check this message right now. Please try again in a minute. Until then, don't tap any links or reply.");
+    // No internet, or the server didn't answer.
+    showError(CHECK_FAILED);
   } finally {
     checkBtn.disabled = false;
-    checkBtnText.textContent = "Check this message";
+    checkLabel.textContent = "Check this message";
   }
 });
 
-// ===== Result =====
+// ===== 6. Result =====
+// What the verdict card says for each level the API can return.
+const LEVELS = {
+  likely_scam: {
+    className: "v-likely",
+    icon: "warning",
+    reasonsTitle: "Warning signs found",
+    title: "This looks like a scam",
+    sub: "Please don't tap any links or reply.",
+  },
+  be_careful: {
+    className: "v-careful",
+    icon: "warning",
+    reasonsTitle: "Warning signs found",
+    title: "Be careful with this one",
+    sub: "Check before you do anything it asks.",
+  },
+  no_signs_found: {
+    className: "v-none",
+    icon: "search",
+    reasonsTitle: "What I looked at",
+    title: "No warning signs found",
+    sub: "That doesn't mean it's safe for sure.",
+  },
+};
+
 function showResult(message, data) {
   const level = LEVELS[data.level];
-  document.getElementById("result-box").className = "result " + level.boxClass;
-  document.getElementById("result-kicker").textContent = level.kicker;
-  document.getElementById("result-headline").textContent = level.headline;
-  document.getElementById("result-line").textContent = level.line;
-  document.getElementById("pasted").textContent = message;
+  document.getElementById("verdict").className = "verdict-card " + level.className;
+  // Show the triangle or the magnifying glass, whichever this level uses.
+  document.getElementById("icon-warning").hidden = level.icon !== "warning";
+  document.getElementById("icon-search").hidden = level.icon !== "search";
+  document.getElementById("verdict-title").textContent = level.title;
+  document.getElementById("verdict-sub").textContent = level.sub;
+  document.getElementById("reasons-title").textContent = level.reasonsTitle;
 
+  // One numbered row per reason. textContent keeps the text plain (no HTML from outside).
   const list = document.getElementById("reasons");
   list.innerHTML = "";
   data.reasons.forEach((reason, i) => {
     const item = document.createElement("li");
-    const num = document.createElement("span");
-    num.className = "num";
-    num.setAttribute("aria-hidden", "true");
-    num.textContent = String(i + 1).padStart(2, "0");
+    item.className = "reason";
+    const number = document.createElement("span");
+    number.className = "n";
+    number.textContent = i + 1;
     const text = document.createElement("span");
     text.textContent = reason;
-    item.append(num, text);
+    item.append(number, text);
     list.append(item);
   });
 
   document.getElementById("next-step").textContent = data.next_step;
-  show("result");
+  document.getElementById("pasted").textContent = message;
+  go("result");
 }
 
-document.getElementById("again-btn").addEventListener("click", () => {
-  msg.value = "";
-  show("check");
-});
+// ===== 7. Check another message =====
+for (const button of document.querySelectorAll("[data-again]")) {
+  button.addEventListener("click", () => {
+    msg.value = "";
+    checkError.hidden = true;
+    pasteNote.hidden = true;
+    go("check");
+  });
+}
