@@ -4,21 +4,96 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CheckFirst</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 1.5rem;
-      font-family: system-ui, sans-serif;
-      font-size: 1.25rem;
-      line-height: 1.5;
-      color: #111;
-      background: #fff;
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <main>
-    <h1>CheckFirst is coming soon</h1>
-  </main>
+<div class="page">
+  <p class="band">Check before you click</p>
+  <header class="header"><span class="logo">CheckFirst</span></header>
+
+  <!-- ===== SCREEN 1: HOME ===== -->
+  <div id="home-screen">
+    <div class="text-size">
+      <label for="textsize">Text size</label>
+      <span class="small-a" aria-hidden="true">A</span>
+      <input id="textsize" type="range" min="18" max="30" step="2" value="20">
+      <span class="big-a" aria-hidden="true">A</span>
+    </div>
+    <main class="content">
+      <div>
+        <h1>Not sure about a message?</h1>
+        <p class="lead" style="margin-top: 8px">Check it here first. It only takes a minute.</p>
+      </div>
+      <button id="go-check" class="task task-check">
+        <span class="task-top">
+          <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg>
+          <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+        </span>
+        <span class="task-title">Is this a scam?</span>
+        <span class="task-sub">Paste a text or email and I'll check it for you.</span>
+      </button>
+      <button class="task task-practice" disabled>
+        <span class="task-top">
+          <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+        </span>
+        <span class="task-title">Practice</span>
+        <span class="task-sub">Coming soon.</span>
+      </button>
+    </main>
+  </div>
+
+  <!-- ===== SCREEN 2: CHECK (paste) ===== -->
+  <div id="check-screen" hidden>
+    <main class="content">
+      <button class="back" data-home>
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M20 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Home
+      </button>
+      <h1>Is this a scam?</h1>
+      <label class="label" for="msg">Paste the message here</label>
+      <textarea id="msg" rows="7" placeholder="Your message will appear here"></textarea>
+      <button id="paste-btn" class="btn btn-outline">Paste what I copied
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="6" y="4" width="12" height="17"/><path d="M9 4V2.5h6V4"/></svg>
+      </button>
+      <p id="paste-notice" class="notice" role="status" hidden>Your phone didn't let me paste. Press and hold inside the box above, then tap <strong>Paste</strong>.</p>
+      <p id="check-error" class="error" role="alert" hidden></p>
+      <button id="check-btn" class="btn btn-primary"><span id="check-btn-text">Check this message</span>
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+      </button>
+      <p class="hint">To copy a text message: press and hold on the message, then tap <strong>Copy</strong>.</p>
+    </main>
+  </div>
+
+  <!-- ===== SCREEN 3: RESULT ===== -->
+  <div id="result-screen" hidden>
+    <div style="padding: 0 24px"><button class="back" data-home>← Home</button></div>
+    <div id="result-box" class="result" role="status">
+      <p id="result-kicker" class="result-kicker"></p>
+      <p id="result-headline" class="result-headline"></p>
+      <p id="result-line" class="result-line"></p>
+    </div>
+    <main class="content" style="gap: 24px">
+      <div>
+        <h2>The message you pasted</h2>
+        <p id="pasted" class="pasted"></p>
+      </div>
+      <div>
+        <h2>Why I think so</h2>
+        <ol id="reasons" class="reasons"></ol>
+      </div>
+      <div class="todo">
+        <h2>What to do</h2>
+        <p id="next-step"></p>
+        <p class="money-rule">Never send money, gift cards, passwords or codes because a message asks. If you're not sure, call the company using a phone number you already trust, not one in the message.</p>
+      </div>
+      <p class="hint">This is a computer's best guess, and it can be wrong. When in doubt, ask someone you trust.</p>
+      <button id="again-btn" class="btn btn-primary">Check another message
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+      </button>
+    </main>
+  </div>
+</div>
+<script src="/static/app.js"></script>
 </body>
 </html>

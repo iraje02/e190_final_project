@@ -1,0 +1,93 @@
+/* ===== Design tokens ===== */
+:root {
+  --cream: #F2EFE9;      /* page background */
+  --paper: #FBFAF7;      /* text boxes, message cards */
+  --ink: #1E3328;        /* main text, primary buttons, borders */
+  --muted: #4A5A50;      /* secondary text */
+  --green: #3D6A4F;      /* top band, small labels */
+  --sage: #E6EBE4;       /* practice card, "no signs" result */
+  --rule: #CFCBC2;       /* light dividers */
+  --rust: #8E3A12;       /* likely scam */
+  --rust-text: #F7F2EA;
+  --ochre-bg: #F3E7C9;   /* be careful */
+  --ochre-text: #4D3906;
+  --text-size: 20px;     /* the text-size slider changes this: 18–30px */
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  font-size: var(--text-size);
+  line-height: 1.45;
+}
+button, textarea, input { font: inherit; color: inherit; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid #B5651D; outline-offset: 2px; }
+
+.page { max-width: 480px; margin: 0 auto; }
+
+/* ===== Top band, header, text-size slider ===== */
+.band { margin: 0; padding: 12px 20px; background: var(--green); color: var(--cream); font-size: 0.85em; text-align: center; }
+.header { padding: 14px 24px 6px; }
+.logo { font-weight: 700; font-size: 1.3em; line-height: 1; }
+.text-size { display: flex; align-items: center; gap: 12px; padding: 0 24px 12px; border-bottom: 1px solid var(--ink); }
+.text-size label { flex: none; font-size: 0.85em; color: var(--muted); }
+.text-size .small-a { flex: none; font-size: 16px; font-weight: 700; }
+.text-size .big-a { flex: none; font-size: 28px; font-weight: 700; line-height: 1; }
+.text-size input { flex: 1; min-width: 0; height: 44px; margin: 0; accent-color: var(--ink); }
+
+/* ===== Layout ===== */
+.content { padding: 24px 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 1.7em; line-height: 1.15; font-weight: 700; }
+.lead { margin: 0; color: var(--muted); }
+.back { align-self: flex-start; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+
+/* ===== Home task cards ===== */
+.task { display: flex; flex-direction: column; gap: 14px; width: 100%; min-height: 190px; padding: 24px; text-align: left; border-radius: 0; cursor: pointer; }
+.task-top { display: flex; justify-content: space-between; align-items: center; }
+.task-title { font-weight: 700; font-size: 1.6em; line-height: 1.15; }
+.task-check { border: none; background: var(--ink); color: var(--cream); }
+.task-check .task-sub { color: #DCE3DD; }
+.task-practice { border: 2px solid var(--ink); background: var(--sage); }
+.task-practice .task-sub { color: #3A4A40; }
+.last-check { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 4px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 0.85em; color: var(--muted); }
+
+/* ===== Badges ===== */
+.badge { flex: none; padding: 3px 8px; font-weight: 700; font-size: 0.85em; }
+.badge-likely { background: var(--rust); color: var(--rust-text); }
+.badge-careful { background: var(--ochre-bg); color: var(--ochre-text); }
+.badge-none { background: var(--sage); color: var(--ink); }
+
+/* ===== Form and buttons ===== */
+.label { font-weight: 700; font-size: 0.95em; }
+textarea { width: 100%; padding: 14px; border: 1.5px solid var(--ink); border-radius: 0; background: var(--paper); line-height: 1.45; resize: vertical; }
+.btn { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 62px; padding: 0 18px; border-radius: 0; font-weight: 700; font-size: 1.05em; cursor: pointer; }
+.btn-primary { border: none; background: var(--ink); color: var(--cream); }
+.btn-primary:disabled { opacity: 0.6; cursor: progress; }
+.btn-outline { min-height: 58px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); font-size: 1em; }
+.hint { margin: 0; font-size: 0.85em; color: var(--muted); }
+.error { margin: 0; color: var(--rust); font-weight: 700; }
+.notice { margin: 0; padding: 14px 16px; background: var(--sage); border-left: 4px solid var(--green); font-size: 0.9em; }
+
+/* ===== Result ===== */
+.result { padding: 28px 24px; }
+.result-kicker { margin: 0; font-weight: 700; font-size: 0.85em; }
+.result-headline { margin: 8px 0 0; font-weight: 700; font-size: 1.8em; line-height: 1.15; }
+.result-line { margin: 10px 0 0; font-weight: 700; }
+.result-likely { background: var(--rust); color: var(--rust-text); }
+.result-careful { background: var(--ochre-bg); color: var(--ochre-text); border-bottom: 1px solid #7A5A0E; }
+.result-none { background: var(--sage); color: var(--ink); border-bottom: 1px solid var(--green); }
+h2 { margin: 0 0 8px; font-size: 0.9em; font-weight: 700; }
+.pasted { margin: 0; padding: 14px 16px; border: 1px solid var(--rule); background: var(--paper); font-size: 0.85em; white-space: pre-wrap; }
+.reasons { list-style: none; margin: 0; padding: 0; }
+.reasons li { display: flex; gap: 14px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.reasons .num { flex: none; font-weight: 700; font-size: 1.2em; line-height: 1; color: var(--green); }
+.todo { padding: 18px; border: 1.5px solid var(--ink); }
+.todo p { margin: 0; font-weight: 700; font-size: 1.1em; line-height: 1.25; }
+.credit { margin: 0; font-size: 0.8em; color: var(--muted); }
+
+/* ===== Additions for the app (not in the design reference) ===== */
+.todo .money-rule { margin-top: 12px; font-weight: 400; font-size: 0.9em; }
+.task-practice:disabled { cursor: default; }

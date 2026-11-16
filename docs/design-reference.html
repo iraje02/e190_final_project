@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CheckFirst — design reference (not the app)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Design tokens ===== */
+:root {
+  --cream: #F2EFE9;      /* page background */
+  --paper: #FBFAF7;      /* text boxes, message cards */
+  --ink: #1E3328;        /* main text, primary buttons, borders */
+  --muted: #4A5A50;      /* secondary text */
+  --green: #3D6A4F;      /* top band, small labels */
+  --sage: #E6EBE4;       /* practice card, "no signs" result */
+  --rule: #CFCBC2;       /* light dividers */
+  --rust: #8E3A12;       /* likely scam */
+  --rust-text: #F7F2EA;
+  --ochre-bg: #F3E7C9;   /* be careful */
+  --ochre-text: #4D3906;
+  --text-size: 20px;     /* the text-size slider changes this: 18–30px */
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  font-size: var(--text-size);
+  line-height: 1.45;
+}
+button, textarea, input { font: inherit; color: inherit; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid #B5651D; outline-offset: 2px; }
+
+.page { max-width: 480px; margin: 0 auto; }
+
+/* ===== Top band, header, text-size slider ===== */
+.band { margin: 0; padding: 12px 20px; background: var(--green); color: var(--cream); font-size: 0.85em; text-align: center; }
+.header { padding: 14px 24px 6px; }
+.logo { font-weight: 700; font-size: 1.3em; line-height: 1; }
+.text-size { display: flex; align-items: center; gap: 12px; padding: 0 24px 12px; border-bottom: 1px solid var(--ink); }
+.text-size label { flex: none; font-size: 0.85em; color: var(--muted); }
+.text-size .small-a { flex: none; font-size: 16px; font-weight: 700; }
+.text-size .big-a { flex: none; font-size: 28px; font-weight: 700; line-height: 1; }
+.text-size input { flex: 1; min-width: 0; height: 44px; margin: 0; accent-color: var(--ink); }
+
+/* ===== Layout ===== */
+.content { padding: 24px 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 1.7em; line-height: 1.15; font-weight: 700; }
+.lead { margin: 0; color: var(--muted); }
+.back { align-self: flex-start; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+
+/* ===== Home task cards ===== */
+.task { display: flex; flex-direction: column; gap: 14px; width: 100%; min-height: 190px; padding: 24px; text-align: left; border-radius: 0; cursor: pointer; }
+.task-top { display: flex; justify-content: space-between; align-items: center; }
+.task-title { font-weight: 700; font-size: 1.6em; line-height: 1.15; }
+.task-check { border: none; background: var(--ink); color: var(--cream); }
+.task-check .task-sub { color: #DCE3DD; }
+.task-practice { border: 2px solid var(--ink); background: var(--sage); }
+.task-practice .task-sub { color: #3A4A40; }
+.last-check { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 4px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 0.85em; color: var(--muted); }
+
+/* ===== Badges ===== */
+.badge { flex: none; padding: 3px 8px; font-weight: 700; font-size: 0.85em; }
+.badge-likely { background: var(--rust); color: var(--rust-text); }
+.badge-careful { background: var(--ochre-bg); color: var(--ochre-text); }
+.badge-none { background: var(--sage); color: var(--ink); }
+
+/* ===== Form and buttons ===== */
+.label { font-weight: 700; font-size: 0.95em; }
+textarea { width: 100%; padding: 14px; border: 1.5px solid var(--ink); border-radius: 0; background: var(--paper); line-height: 1.45; resize: vertical; }
+.btn { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 62px; padding: 0 18px; border-radius: 0; font-weight: 700; font-size: 1.05em; cursor: pointer; }
+.btn-primary { border: none; background: var(--ink); color: var(--cream); }
+.btn-primary:disabled { opacity: 0.6; cursor: progress; }
+.btn-outline { min-height: 58px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); font-size: 1em; }
+.hint { margin: 0; font-size: 0.85em; color: var(--muted); }
+.error { margin: 0; color: var(--rust); font-weight: 700; }
+.notice { margin: 0; padding: 14px 16px; background: var(--sage); border-left: 4px solid var(--green); font-size: 0.9em; }
+
+/* ===== Result ===== */
+.result { padding: 28px 24px; }
+.result-kicker { margin: 0; font-weight: 700; font-size: 0.85em; }
+.result-headline { margin: 8px 0 0; font-weight: 700; font-size: 1.8em; line-height: 1.15; }
+.result-line { margin: 10px 0 0; font-weight: 700; }
+.result-likely { background: var(--rust); color: var(--rust-text); }
+.result-careful { background: var(--ochre-bg); color: var(--ochre-text); border-bottom: 1px solid #7A5A0E; }
+.result-none { background: var(--sage); color: var(--ink); border-bottom: 1px solid var(--green); }
+h2 { margin: 0 0 8px; font-size: 0.9em; font-weight: 700; }
+.pasted { margin: 0; padding: 14px 16px; border: 1px solid var(--rule); background: var(--paper); font-size: 0.85em; white-space: pre-wrap; }
+.reasons { list-style: none; margin: 0; padding: 0; }
+.reasons li { display: flex; gap: 14px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.reasons .num { flex: none; font-weight: 700; font-size: 1.2em; line-height: 1; color: var(--green); }
+.todo { padding: 18px; border: 1.5px solid var(--ink); }
+.todo p { margin: 0; font-weight: 700; font-size: 1.1em; line-height: 1.25; }
+.credit { margin: 0; font-size: 0.8em; color: var(--muted); }
+
+/* Reference-only: labels between screens */
+.screen-label { margin: 40px 24px 8px; font-size: 14px; color: #888; font-family: monospace; }
+.screen { border-top: 4px dashed #bbb; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- =============== SCREEN 1: HOME =============== -->
+<p class="screen-label">SCREEN 1 — Home</p>
+<div class="screen">
+  <p class="band">Check before you click</p>
+  <header class="header"><span class="logo">CheckFirst</span></header>
+  <div class="text-size">
+    <label for="textsize">Text size</label>
+    <span class="small-a" aria-hidden="true">A</span>
+    <input id="textsize" type="range" min="18" max="30" step="2" value="20">
+    <span class="big-a" aria-hidden="true">A</span>
+  </div>
+  <main class="content">
+    <div>
+      <h1>Not sure about a message?</h1>
+      <p class="lead" style="margin-top: 8px">Check it here first. It only takes a minute.</p>
+    </div>
+    <button class="task task-check">
+      <span class="task-top">
+        <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg>
+        <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+      </span>
+      <span class="task-title">Is this a scam?</span>
+      <span class="task-sub">Paste a text or email and I'll check it for you.</span>
+    </button>
+    <button class="task task-practice">
+      <span class="task-top">
+        <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+        <svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+      </span>
+      <span class="task-title">Practice</span>
+      <span class="task-sub">Learn to spot scams with safe example messages.</span>
+    </button>
+    <p class="last-check">
+      <span>Last check: <strong style="color: var(--ink)">Message about a package</strong>, yesterday</span>
+      <span class="badge badge-likely">Likely scam</span>
+    </p>
+  </main>
+</div>
+
+<!-- =============== SCREEN 2: CHECK =============== -->
+<p class="screen-label">SCREEN 2 — Is this a scam? (paste)</p>
+<div class="screen">
+  <p class="band">Check before you click</p>
+  <header class="header"><span class="logo">CheckFirst</span></header>
+  <main class="content">
+    <button class="back">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M20 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Home
+    </button>
+    <h1>Is this a scam?</h1>
+    <label class="label" for="msg">Paste the message here</label>
+    <textarea id="msg" rows="7" placeholder="Your message will appear here"></textarea>
+    <button class="btn btn-outline">Paste what I copied
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="6" y="4" width="12" height="17"/><path d="M9 4V2.5h6V4"/></svg>
+    </button>
+    <!-- Shown if clipboard paste is blocked: -->
+    <p class="notice" role="status">Your phone didn't let me paste. Press and hold inside the box above, then tap <strong>Paste</strong>.</p>
+    <!-- Shown if the box is empty: -->
+    <p class="error" role="alert">Please paste a message first.</p>
+    <button class="btn btn-primary">Check this message
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+    </button>
+    <!-- While waiting: button text becomes "Checking…" and the button is disabled -->
+    <p class="hint">To copy a text message: press and hold on the message, then tap <strong>Copy</strong>.</p>
+  </main>
+</div>
+
+<!-- =============== SCREEN 3: RESULT =============== -->
+<p class="screen-label">SCREEN 3 — Result (Likely scam shown; Be careful = .result-careful, No signs = .result-none)</p>
+<div class="screen">
+  <p class="band">Check before you click</p>
+  <header class="header"><span class="logo">CheckFirst</span></header>
+  <div style="padding: 0 24px"><button class="back">← Home</button></div>
+  <div class="result result-likely" role="status">
+    <p class="result-kicker">Result · Likely scam</p>
+    <p class="result-headline">This looks like a scam</p>
+    <p class="result-line">Please don't tap any links or reply.</p>
+  </div>
+  <!-- Other levels:
+  <div class="result result-careful"> Result · Be careful / Be careful with this one / Check before you do anything it asks.
+  <div class="result result-none">    Result · No signs found / No warning signs found / That doesn't mean it's safe for sure.
+  -->
+  <main class="content" style="gap: 24px">
+    <div>
+      <h2>The message you pasted</h2>
+      <p class="pasted">Your package could not be delivered. Pay a $1.99 redelivery fee within 24 hours: parcel-redelivery-help.co/pay</p>
+    </div>
+    <div>
+      <h2>Why I think so</h2>
+      <ol class="reasons">
+        <li><span class="num" aria-hidden="true">01</span><span>It rushes you: it says "within 24 hours."</span></li>
+        <li><span class="num" aria-hidden="true">02</span><span>It asks for money you weren't expecting.</span></li>
+        <li><span class="num" aria-hidden="true">03</span><span>The link is not the real delivery company's website.</span></li>
+      </ol>
+    </div>
+    <div class="todo">
+      <h2>What to do</h2>
+      <p>Don't pay or share anything. If you're not sure, call the company using a phone number you already trust, not one in the message.</p>
+    </div>
+    <p class="hint">This is a computer's best guess, and it can be wrong. When in doubt, ask someone you trust.</p>
+    <p class="credit">Link check: Advisory provided by Google.</p>
+    <button class="btn btn-primary">Check another message
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+    </button>
+  </main>
+</div>
+
+<!-- Error state (model failed): show in place of the result block, keep the pasted message:
+<p class="error" role="alert">Sorry, I couldn't check this message right now. Please try again in a minute. Until then, don't tap any links or reply.</p>
+-->
+
+</div>
+</body>
+</html>
