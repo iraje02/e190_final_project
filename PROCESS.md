@@ -35,3 +35,21 @@ CheckFirst: a phone-friendly web page that helps older adults check whether a me
 ![Clickable prototype home screen I showed Professor Dodds](process/clickable_prototype.png)
 
 **Next.** Make the design changes, look into datasets for practice mode, and pivot to writing the code and building the website into an actual URL for design reviews.
+
+## 2026-11-15 — From prototype to a live website
+
+**Stage:** Prototype, Test, building
+
+**What I did.** Tonight I went from prototype to a live website. First I deployed a hello-world FastAPI app to Railway (#5). My Railway trial had expired, so I had to choose between paying for Hobby or switching to something like Vercel. I stayed on Railway at $5 a month because it's the course stack and staff can help me debug it. Railway also couldn't load my branches until I gave its GitHub app access to the repo. Then I built the real scam check with the LLM (#6). Once it worked, I didn't like the UI: it felt bare and boring, didn't feel like a real website, and only worked as a phone layout. So I made a second design reference that works on laptop and phone, with a nav bar, a hero with a phone showing a scam text, how-it-works steps, and common scam types (#8). After deploying it, I checked the website on my phone and the nav buttons only showed up on the laptop version, so I added them for phones too (#9).
+
+**What I learned.** The first time I tested the check live, it failed with "credit balance too low." From the Railway logs I figured out the code was calling Anthropic directly with my own account, but our Glassroom key speaks the OpenAI API. Railway's deployment logs were really useful for figuring out why things weren't working; the API key issues were only something I could figure out by looking at the logs. The good news is the error message showed exactly as designed every time it failed, instead of breaking the page. I also learned how effective my AI workflow is: building the prototype first on Claude.ai, then giving Claude Code reference HTML files to build from.
+
+**What changed because of it.** I switched to the OpenAI SDK pointed at Glassroom with claude-haiku-4-5 (#7), then fixed one more error where the variable name in Railway didn't match. I revised my second design by cutting some things that made the website look too "AI generated," and added buttons to the nav bar for easy navigation. After testing on my phone, I made the nav buttons show on the phone layout too.
+
+**Working with AI.** I prototyped the design on Claude.ai, saved it as a reference HTML file in docs/, and had Claude Code build the real page from it, first for the phone-only version and then for the laptop-and-phone version.
+
+**Evidence.** #5 (hello-world deploy), #6 (scam check), #7 (switch to Glassroom), #8 (redesign from design-reference-v2.html), #9 (nav buttons on phones)
+
+![First live version, before the redesign](process/initial_website_deployment.png)
+
+**Next.** Add the database and the last-check line, add Safe Browsing, and then test and ask others for feedback on how the website is looking.
