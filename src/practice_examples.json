@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "kind": "text",
+    "from": "+1 (833) 555-0142",
+    "subject": null,
+    "message": "Your package could not be delivered due to an incomplete address. Pay a $1.99 redelivery fee within 24 hours: parcel-redelivery-help.co/pay",
+    "is_scam": true,
+    "signs": ["urgency", "money_request", "suspicious_link"],
+    "explanation": "Delivery companies don't ask you to pay fees by text. The small amount is a trick: the real goal is to get your card number on a fake page."
+  },
+  {
+    "id": 2,
+    "kind": "text",
+    "from": "+1 (928) 555-0190",
+    "subject": null,
+    "message": "FINAL NOTICE: You have an unpaid toll balance of $4.15. Pay now to avoid a $50 late fee and suspension of your license: tollpay-account.co/pay",
+    "is_scam": true,
+    "signs": ["urgency", "money_request", "suspicious_link"],
+    "explanation": "Toll agencies send bills by mail or through their own app. Threats about your license and a big late fee are meant to scare you into paying fast."
+  },
+  {
+    "id": 3,
+    "kind": "email",
+    "from": "security@acc0unt-help.net",
+    "subject": "Your account will be locked",
+    "message": "We noticed unusual sign-in activity on your account. Verify your password within 12 hours or your account will be closed. Click here to verify.",
+    "is_scam": true,
+    "signs": ["urgency", "wrong_sender", "asks_for_code_or_password"],
+    "explanation": "Real companies never ask for your password by email. The sender's address uses a zero instead of an \"o\" in \"acc0unt\", which is a common trick."
+  },
+  {
+    "id": 4,
+    "kind": "text",
+    "from": "+1 (415) 555-0177",
+    "subject": null,
+    "message": "Grandma it's me, I lost my phone and this is a friend's number. I got into a car accident and need $800 for the repair today. Please don't tell Mom, she'll be so mad. Can you send gift cards?",
+    "is_scam": true,
+    "signs": ["urgency", "money_request", "secrecy", "wrong_sender"],
+    "explanation": "Scammers pretend to be family in trouble. The new number, the rush, asking for gift cards and asking you to keep it secret are all warning signs. Call your grandchild on their usual number first."
+  },
+  {
+    "id": 5,
+    "kind": "email",
+    "from": "rewards@winner-notice-center.com",
+    "subject": "Congratulations! You've been selected",
+    "message": "You have won a $1,000 grocery gift card in our monthly customer draw! To claim your prize, confirm your name, address and date of birth and pay a $9.99 shipping fee here: claim-prize-now.com",
+    "is_scam": true,
+    "signs": ["too_good_to_be_true", "money_request", "suspicious_link"],
+    "explanation": "You can't win a contest you never entered. A real prize never asks you to pay a fee or share your date of birth."
+  },
+  {
+    "id": 6,
+    "kind": "text",
+    "from": "+1 (646) 555-0123",
+    "subject": null,
+    "message": "Your bank: We stopped a $1,250 charge on your card. If this wasn't you, reply with the 6-digit code we just sent you to cancel it.",
+    "is_scam": true,
+    "signs": ["urgency", "asks_for_code_or_password"],
+    "explanation": "Never share a code that was texted to you. Scammers trigger the code themselves, and the code lets them into your account. Your bank will never ask for it."
+  },
+  {
+    "id": 7,
+    "kind": "email",
+    "from": "billing@medicare-benefit-update.org",
+    "subject": "Action required: new benefits card",
+    "message": "Your health benefits card is expiring. To receive your new card, confirm your Social Security number and bank details by replying to this email by Friday.",
+    "is_scam": true,
+    "signs": ["urgency", "asks_for_code_or_password", "wrong_sender"],
+    "explanation": "Government and health agencies don't ask for your Social Security number or bank details by email. If you're unsure, call the number on the back of your current card."
+  },
+  {
+    "id": 8,
+    "kind": "text",
+    "from": "Main Street Pharmacy",
+    "subject": null,
+    "message": "Main Street Pharmacy: Your prescription is ready for pickup. Store hours are 9am to 7pm. Reply STOP to stop texts.",
+    "is_scam": false,
+    "signs": [],
+    "explanation": "This one is real. It doesn't ask for money, a code, a password or a link. It just tells you something you'd expect."
+  },
+  {
+    "id": 9,
+    "kind": "text",
+    "from": "Sam (saved contact)",
+    "subject": null,
+    "message": "Hi Grandma! Landed safely in Boston. I'll call you tonight after dinner. Love you!",
+    "is_scam": false,
+    "signs": [],
+    "explanation": "This one is real. It's from a saved contact and doesn't ask for anything. If a message \"from family\" ever asks for money or secrecy, call them on their usual number first."
+  },
+  {
+    "id": 10,
+    "kind": "email",
+    "from": "alerts@yourbank.com",
+    "subject": "Your monthly statement is ready",
+    "message": "Your October statement is now available. To view it, open the bank's app or sign in on the website you usually use. We will never ask for your password or codes by email.",
+    "is_scam": false,
+    "signs": [],
+    "explanation": "This one is real. It doesn't rush you, ask for anything or include a link to tap. It tells you to use the app or website you already use."
+  },
+  {
+    "id": 11,
+    "kind": "text",
+    "from": "Dr. Lee's Office",
+    "subject": null,
+    "message": "Reminder: You have an appointment with Dr. Lee on Tuesday at 10:30am. Reply C to confirm or call our office to reschedule.",
+    "is_scam": false,
+    "signs": [],
+    "explanation": "This one is real. Appointment reminders like this are normal. It asks you to reply or call the office, not to pay or share private information."
+  },
+  {
+    "id": 12,
+    "kind": "email",
+    "from": "orders@shop-online-deals.net",
+    "subject": "Problem with your order",
+    "message": "We could not process your recent order. Your account will be suspended unless you update your payment information within 48 hours using the link below.",
+    "is_scam": true,
+    "signs": ["urgency", "money_request", "suspicious_link", "wrong_sender"],
+    "explanation": "If you didn't place an order, there's no problem to fix. Real stores show order problems in your account on their own website, not through a link in a threatening email."
+  }
+]

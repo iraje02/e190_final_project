@@ -16,6 +16,9 @@ function go(name, scrollId) {
     }
   }
 
+  // Opening the Practice screen starts a new round of 5.
+  if (name === "practice") startPractice();
+
   // Scroll to a section if one was asked for, otherwise to the top.
   if (scrollId) {
     document.getElementById(scrollId).scrollIntoView({ behavior: "smooth" });
@@ -237,3 +240,153 @@ for (const button of document.querySelectorAll("[data-again]")) {
     go("check");
   });
 }
+
+// ===== 8. Practice =====
+// One round is 5 messages. We remember which ones were shown so none repeat in a round.
+const ROUND_LENGTH = 5;
+let seenIds = [];    // ids of messages shown this round
+let questionNumber = 0;  // which message we're on (1 to 5)
+let score = 0;       // how many they got right
+let currentId = null;  // id of the message on screen
+
+const practiceLoading = document.getElementById("practice-loading");
+const practiceErrorBox = document.getElementById("practice-error-box");
+const practiceQuestion = document.getElementById("practice-question");
+const practiceChoices = document.getElementById("practice-choices");
+const practiceFeedback = document.getElementById("practice-feedback");
+const practiceScore = document.getElementById("practice-score");
+const answerError = document.getElementById("answer-error");
+const answerButtons = document.querySelectorAll("[data-answer]");
+
+// Show one part of the practice screen and hide the others.
+function showPracticePart(part) {
+  practiceLoading.hidden = part !== "loading";
+  practiceErrorBox.hidden = part !== "error";
+  practiceQuestion.hidden = part !== "question";
+  practiceScore.hidden = part !== "score";
+}
+
+function startPractice() {
+  seenIds = [];
+  questionNumber = 0;
+  score = 0;
+  loadNextMessage();
+}
+
+async function loadNextMessage() {
+  showPracticePart("loading");
+  try {
+    const response = await fetch("/api/practice/next?exclude=" + seenIds.join(","));
+    if (!response.ok) throw new Error();
+    const example = await response.json();
+    questionNumber += 1;
+    seenIds.push(example.id);
+    showMessage(example);
+  } catch (e) {
+    document.getElementById("practice-error").textContent =
+      "Sorry, I couldn't load a practice message right now. Please try again in a minute.";
+    showPracticePart("error");
+  }
+}
+
+document.getElementById("practice-retry").addEventListener("click", loadNextMessage);
+
+// Put the message on screen, styled as a text or an email.
+function showMessage(example) {
+  currentId = example.id;
+  document.getElementById("practice-progress").textContent = "Practice · " + questionNumber + " of " + ROUND_LENGTH;
+
+  const isEmail = example.kind === "email";
+  document.getElementById("practice-kind").textContent = isEmail ? "Email" : "Text message";
+  document.getElementById("practice-sms").hidden = isEmail;
+  document.getElementById("practice-email").hidden = !isEmail;
+  if (isEmail) {
+    document.getElementById("email-from").textContent = example.from;
+    document.getElementById("email-subject").textContent = example.subject;
+    document.getElementById("email-message").textContent = example.message;
+  } else {
+    document.getElementById("sms-from").textContent = example.from;
+    document.getElementById("sms-message").textContent = example.message;
+  }
+
+  // Fresh question: answer buttons on, feedback off.
+  practiceChoices.hidden = false;
+  practiceFeedback.hidden = true;
+  answerError.hidden = true;
+  for (const button of answerButtons) button.disabled = false;
+  showPracticePart("question");
+  window.scrollTo(0, 0);
+}
+
+// "Scam" or "Not a scam" was tapped.
+for (const button of answerButtons) {
+  button.addEventListener("click", async () => {
+    answerError.hidden = true;
+    for (const b of answerButtons) b.disabled = true;  // loading: no double taps
+    try {
+      const response = await fetch("/api/practice/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: currentId, answer: button.dataset.answer }),
+      });
+      if (!response.ok) throw new Error();
+      showFeedback(await response.json());
+    } catch (e) {
+      answerError.textContent = "Sorry, I couldn't check your answer right now. Please try again.";
+      answerError.hidden = false;
+      for (const b of answerButtons) b.disabled = false;
+    }
+  });
+}
+
+// Show whether they were right, what gave it away, and why.
+function showFeedback(data) {
+  if (data.correct) score += 1;
+
+  practiceFeedback.className = "feedback " + (data.correct ? "feedback-right" : "feedback-wrong");
+  document.getElementById("feedback-title").textContent = data.correct ? "You got it!" : "Not quite";
+  // Say "This one is a scam." for scams. For real messages the explanation already starts with "This one is real."
+  const truth = document.getElementById("feedback-truth");
+  truth.textContent = "This one is a scam.";
+  truth.hidden = !data.is_scam;
+
+  // One chip per warning sign. Real messages have none, so the box is hidden.
+  const signs = document.getElementById("feedback-signs");
+  signs.innerHTML = "";
+  for (const sign of data.signs) {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = sign;
+    signs.append(chip);
+  }
+  document.getElementById("feedback-signs-box").hidden = data.signs.length === 0;
+
+  document.getElementById("feedback-explanation").textContent = data.explanation;
+  document.getElementById("practice-next").textContent =
+    questionNumber < ROUND_LENGTH ? "Next message" : "See my score";
+
+  practiceChoices.hidden = true;
+  practiceFeedback.hidden = false;
+}
+
+// "Next message", or the score after the 5th.
+document.getElementById("practice-next").addEventListener("click", () => {
+  if (questionNumber < ROUND_LENGTH) {
+    loadNextMessage();
+  } else {
+    showScore();
+  }
+});
+
+function showScore() {
+  document.getElementById("practice-progress").textContent = "Practice";
+  document.getElementById("score-title").textContent = "You got " + score + " of " + ROUND_LENGTH + " right";
+  document.getElementById("score-note").textContent =
+    score === ROUND_LENGTH
+      ? "Great job. You spotted every one."
+      : "Every message you practice makes the next real one easier to spot.";
+  showPracticePart("score");
+  window.scrollTo(0, 0);
+}
+
+document.getElementById("practice-again").addEventListener("click", startPractice);
