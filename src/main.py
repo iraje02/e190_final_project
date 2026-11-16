@@ -1,7 +1,9 @@
 import json
 import os
+import re
 from pathlib import Path
 
+import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -36,7 +38,91 @@ Rules:
 - Give 2 or 3 short reasons, each one plain sentence that points at something in the message.
 - Give exactly one next step the person can do right now.
 - If the message asks for money, gift cards, passwords, codes or personal information, the next step must tell them to contact the company using a phone number they already trust, not one in the message.
-- Use plain, everyday words. No jargon. Write to the person as "you"."""
+- Use plain, everyday words. No jargon. Write to the person as "you".
+
+The user's turn may also include <link_check> with Google Safe Browsing results for the links in the message:
+- A link "flagged as phishing" or "flagged as malware" means the message is likely_scam.
+- "Not on Google's list" does NOT mean a link is safe. New scam links are often not on the list yet, so still judge the link yourself.
+- If the link check could not run, judge the links from the message alone and never call them safe."""
+
+# ----- Google Safe Browsing -----
+SAFE_BROWSING_URL = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
+MAX_LINKS = 10
+
+# Finds links three ways: starting with http(s)://, starting with www., or a bare
+# domain like parcel-redelivery-help.co/pay (scam texts often leave off https://).
+# (?<![@\w.-]) stops it matching the domain part of an email address.
+LINK_PATTERN = re.compile(
+    r"(?:https?://|www\.)\S+"
+    r"|(?<![@\w.-])[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:/\S*)?",
+    re.IGNORECASE,
+)
+
+
+def find_links(message):
+    """Return up to MAX_LINKS links from the message, in order, without repeats."""
+    links = []
+    for match in LINK_PATTERN.findall(message):
+        link = match.rstrip(".,;:!?)\"'")  # drop punctuation that ends the sentence
+        if link not in links:
+            links.append(link)
+    return links[:MAX_LINKS]
+
+
+def with_scheme(link):
+    """Safe Browsing needs a full URL, so add http:// to links that don't have one."""
+    if link.lower().startswith(("http://", "https://")):
+        return link
+    return "http://" + link
+
+
+def check_links_with_google(links):
+    """Look up all the links in one Safe Browsing request.
+
+    Returns {link: "suspected_phishing" | "suspected_malware" | "no_match"}.
+    Raises an exception if the lookup can't be done (no key, timeout, error),
+    so the caller never mistakes a failed check for a clean one.
+    """
+    body = {
+        "client": {"clientId": "checkfirst", "clientVersion": "1.0"},
+        "threatInfo": {
+            "threatTypes": [
+                "MALWARE",
+                "SOCIAL_ENGINEERING",
+                "UNWANTED_SOFTWARE",
+                "POTENTIALLY_HARMFUL_APPLICATION",
+            ],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": with_scheme(link)} for link in links],
+        },
+    }
+    response = requests.post(
+        SAFE_BROWSING_URL,
+        params={"key": os.environ["SAFE_BROWSING_API_KEY"]},
+        json=body,
+        timeout=5,
+    )
+    response.raise_for_status()
+
+    # An empty {} means none of the links are on Google's list. That is NOT the same as safe.
+    results = {link: "no_match" for link in links}
+    for match in response.json().get("matches", []):
+        for link in links:
+            if with_scheme(link) == match["threat"]["url"]:
+                if match["threatType"] == "SOCIAL_ENGINEERING":
+                    results[link] = "suspected_phishing"
+                else:
+                    results[link] = "suspected_malware"
+    return results
+
+
+# How each result is described to the model inside <link_check>.
+LINK_WORDS = {
+    "suspected_phishing": "flagged as phishing",
+    "suspected_malware": "flagged as malware",
+    "no_match": "not on Google's list",
+}
 
 # The shape the model must answer in. The API checks the answer against this.
 RESULT_SCHEMA = {
@@ -71,6 +157,26 @@ def check(body: CheckRequest):
     if not message:
         raise HTTPException(status_code=400, detail="Please paste a message first.")
 
+    # 1. Check the links with Google first, so the model can use the results.
+    links = find_links(message)
+    if not links:
+        link_check = "no_links"
+        link_results = {}
+        link_note = "<link_check>\nNo links found in the message.\n</link_check>"
+    else:
+        try:
+            link_results = check_links_with_google(links)
+            link_check = "ok"
+            lines = [f"- {link}: {LINK_WORDS[link_results[link]]}" for link in links]
+            link_note = "<link_check>\n" + "\n".join(lines) + "\n</link_check>"
+        except Exception as error:
+            # The lookup failed, so we know nothing about the links. Never treat them as clean.
+            print(f"Link check failed: {error!r}")
+            link_check = "unavailable"
+            link_results = {link: "not_checked" for link in links}
+            link_note = "<link_check>\nThe link check could not run this time.\n</link_check>"
+
+    # 2. Ask the model, giving it the message and the link results.
     try:
         # Glassroom speaks the OpenAI API, so we use the OpenAI SDK pointed at it.
         # The key comes from the GLASSROOM_API_KEY environment variable.
@@ -84,7 +190,7 @@ def check(body: CheckRequest):
             },
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"<message>\n{message}\n</message>"},
+                {"role": "user", "content": f"<message>\n{message}\n</message>\n\n{link_note}"},
             ],
         )
 
@@ -98,6 +204,12 @@ def check(body: CheckRequest):
         print(f"Check failed: {error!r}")
         raise HTTPException(status_code=503, detail=CHECK_FAILED)
 
+    # 3. If Google flagged any link, it's a likely scam no matter what the model said (CONTRACT.md).
+    if "suspected_phishing" in link_results.values() or "suspected_malware" in link_results.values():
+        result["level"] = "likely_scam"
+
+    result["links"] = [{"url": link, "result": link_results[link]} for link in links]
+    result["link_check"] = link_check
     return result
 
 

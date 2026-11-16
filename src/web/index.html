@@ -245,13 +245,11 @@
       <div class="card">
         <h2 id="reasons-title" style="font-size:1.3rem">Warning signs found</h2>
         <ol id="reasons" class="reasons"></ol>
-        <!-- Shown only when the API returns link results (after Safe Browsing is added). -->
+        <!-- Shown only when the message had links. app.js adds one .links-check row per link. -->
         <div id="link-check" hidden>
-          <div class="links-check">
-            <span>Link check: <strong id="link-domain"></strong></span>
-            <span class="pill">Suspected phishing</span>
-          </div>
-          <p style="margin-top:8px;font-size:.75rem;color:var(--muted)">Advisory provided by Google.</p>
+          <div id="link-rows"></div>
+          <p id="link-unavailable" class="links-check" hidden>The links couldn't be checked this time.</p>
+          <p id="link-credit" style="margin-top:8px;font-size:.75rem;color:var(--muted)">Advisory provided by Google.</p>
         </div>
       </div>
 

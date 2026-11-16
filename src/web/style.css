@@ -216,6 +216,10 @@ textarea:focus { border-color: var(--ink); outline: none; box-shadow: 0 0 0 4px 
 .paste-note { margin-top: 12px; padding: 14px 16px; border-radius: 12px; background: var(--sage); font-size: .9rem; }
 .btn:disabled { opacity: .6; cursor: progress; }
 .todo .money-rule { margin-top: 14px; font-size: .9rem; color: #CBD6CE; }
+.pill-sage { background: var(--sage); color: var(--ink); }
+/* Long links: let the pill drop below the link, and only break a link when it's too long for a whole line. */
+.links-check { flex-wrap: wrap; }
+.links-check strong { overflow-wrap: anywhere; }
 
 /* Phones and small screens: show the three nav buttons as their own row under the logo,
    three equal columns, with text allowed to wrap so they fit side by side. */
