@@ -281,8 +281,71 @@
     <button class="back" data-go="home">
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>Back to home
     </button>
-    <h1 class="page-title">Practice — coming soon</h1>
-    <p class="page-lead">Soon you'll be able to practice spotting scams with safe example messages, one at a time.</p>
+    <p id="practice-progress" class="eyebrow" style="margin-top:8px">Practice</p>
+    <h1 class="page-title">Scam or not?</h1>
+    <p class="page-lead">Read the message, then decide. These are safe examples, so nothing here can hurt you.</p>
+
+    <!-- Loading and error states, like the check screen. -->
+    <p id="practice-loading" class="page-lead" role="status" hidden>Loading a practice message…</p>
+    <div id="practice-error-box" hidden>
+      <p id="practice-error" class="form-error" role="alert"></p>
+      <button id="practice-retry" class="btn btn-ghost" style="margin-top:16px">Try again</button>
+    </div>
+
+    <!-- One practice question: the message on the left, the answer side on the right (stacked on phones). -->
+    <div id="practice-question" class="check-grid" hidden>
+      <div class="card">
+        <p id="practice-kind" class="eyebrow"></p>
+
+        <!-- Shown for text messages: looks like a phone text. -->
+        <div id="practice-sms" class="sms" hidden>
+          <div class="sms-from"><span class="avatar" aria-hidden="true">?</span><span>From: <strong id="sms-from"></strong></span></div>
+          <p id="sms-message" class="sms-bubble"></p>
+        </div>
+
+        <!-- Shown for emails: sender line, subject, then the body. -->
+        <div id="practice-email" class="email" hidden>
+          <div class="email-head">
+            <p><span class="email-label">From:</span> <strong id="email-from"></strong></p>
+            <p><span class="email-label">Subject:</span> <strong id="email-subject"></strong></p>
+          </div>
+          <p id="email-message" class="email-body"></p>
+        </div>
+      </div>
+
+      <div>
+        <!-- Before answering: the two big buttons. -->
+        <div id="practice-choices" class="card-flat answer-buttons">
+          <h2 style="font-size:1.2rem">Is this a scam?</h2>
+          <button class="btn btn-block btn-scam" data-answer="scam">Scam</button>
+          <button class="btn btn-block btn-ghost" data-answer="not_scam">Not a scam</button>
+          <p id="answer-error" class="form-error" role="alert" hidden></p>
+        </div>
+
+        <!-- After answering: right or wrong, what gave it away, and why. -->
+        <div id="practice-feedback" class="feedback" role="status" hidden>
+          <h2 id="feedback-title" style="font-size:1.6rem"></h2>
+          <p id="feedback-truth" style="font-weight:700"></p>
+          <div id="feedback-signs-box">
+            <h3 style="font-size:1rem">What gave it away</h3>
+            <div id="feedback-signs" class="chips"></div>
+          </div>
+          <p id="feedback-explanation"></p>
+          <button id="practice-next" class="btn btn-primary btn-block">Next message</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- After 5 messages: the score. -->
+    <div id="practice-score" class="card" style="margin-top:28px" role="status" hidden>
+      <p class="eyebrow">All done</p>
+      <h2 id="score-title" style="font-size:1.8rem;margin-top:8px"></h2>
+      <p id="score-note" style="margin-top:10px;color:var(--muted)"></p>
+      <div class="hero-actions">
+        <button id="practice-again" class="btn btn-primary">Practice again</button>
+        <button class="btn btn-ghost" data-go="home">Back to home</button>
+      </div>
+    </div>
   </div>
 </main>
 

@@ -217,6 +217,27 @@ textarea:focus { border-color: var(--ink); outline: none; box-shadow: 0 0 0 4px 
 .btn:disabled { opacity: .6; cursor: progress; }
 .todo .money-rule { margin-top: 14px; font-size: .9rem; color: #CBD6CE; }
 .pill-sage { background: var(--sage); color: var(--ink); }
+
+/* ---------- Practice ---------- */
+/* A practice text message, drawn like a phone conversation. */
+.sms { margin-top: 14px; padding: 18px; border-radius: 22px; background: #FAFAF7; border: 1px solid var(--line); }
+.sms-from { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--line); font-size: .9rem; color: var(--muted); }
+.sms-from strong { color: var(--ink); }
+.sms-bubble { max-width: 95%; padding: 14px 16px; border-radius: 18px 18px 18px 6px; background: #ECEAE4; }
+/* A practice email: From and Subject lines, then the body. */
+.email { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; background: #FCFBF8; }
+.email-head { display: grid; gap: 6px; padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: .9rem; }
+.email-head strong { overflow-wrap: anywhere; }
+.email-label { color: var(--muted); }
+.email-body { padding: 16px; white-space: pre-wrap; }
+/* The answer buttons and what shows after answering. */
+.answer-buttons { display: grid; gap: 14px; }
+.btn-scam { background: var(--rust); color: #FBF3EC; }
+.btn-scam:hover { background: #7A3010; }
+.feedback { display: grid; gap: 14px; padding: 26px; border-radius: 22px; }
+.feedback-right { background: var(--sage); border: 2px solid var(--green); }
+.feedback-wrong { background: var(--rust-soft); border: 2px solid var(--rust); }
+.feedback .chip { background: var(--white); }
 /* Long links: let the pill drop below the link, and only break a link when it's too long for a whole line. */
 .links-check { flex-wrap: wrap; }
 .links-check strong { overflow-wrap: anywhere; }

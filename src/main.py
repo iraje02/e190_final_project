@@ -1,7 +1,9 @@
 import json
 import os
+import random
 import re
 from pathlib import Path
+from typing import Literal
 
 import requests
 from fastapi import FastAPI, HTTPException
@@ -211,6 +213,67 @@ def check(body: CheckRequest):
     result["links"] = [{"url": link, "result": link_results[link]} for link in links]
     result["link_check"] = link_check
     return result
+
+
+# ----- Practice mode -----
+# The practice messages live in a JSON file next to this one, loaded once when the app starts.
+PRACTICE_EXAMPLES = json.loads((Path(__file__).parent / "practice_examples.json").read_text())
+
+# Plain-language words for each warning sign used in practice_examples.json.
+SIGN_LABELS = {
+    "urgency": "It rushes you",
+    "money_request": "It asks for money",
+    "suspicious_link": "It has a suspicious link",
+    "wrong_sender": "The sender doesn't look right",
+    "asks_for_code_or_password": "It asks for a code, password or private details",
+    "too_good_to_be_true": "It's too good to be true",
+    "secrecy": "It asks you to keep it secret",
+}
+
+# Stop the app from starting if an example uses a sign that isn't in the list above.
+for example in PRACTICE_EXAMPLES:
+    for sign in example["signs"]:
+        if sign not in SIGN_LABELS:
+            raise ValueError(f"Practice example {example['id']} has an unknown sign: {sign}")
+
+
+class PracticeAnswer(BaseModel):
+    id: int
+    answer: Literal["scam", "not_scam"]
+
+
+@app.get("/api/practice/next")
+def practice_next(exclude: str = ""):
+    # exclude is a list of ids already seen this round, like "1,2,5".
+    seen = [int(part) for part in exclude.split(",") if part.strip().isdigit()]
+    choices = [example for example in PRACTICE_EXAMPLES if example["id"] not in seen]
+    if not choices:
+        choices = PRACTICE_EXAMPLES  # they've seen them all, so start over
+    example = random.choice(choices)
+
+    # Only send what's needed to show the message. The answer stays on the server.
+    return {
+        "id": example["id"],
+        "kind": example["kind"],
+        "from": example["from"],
+        "subject": example["subject"],
+        "message": example["message"],
+    }
+
+
+@app.post("/api/practice/answer")
+def practice_answer(body: PracticeAnswer):
+    example = next((ex for ex in PRACTICE_EXAMPLES if ex["id"] == body.id), None)
+    if example is None:
+        raise HTTPException(status_code=404, detail="Sorry, I couldn't find that practice message.")
+
+    said_scam = body.answer == "scam"
+    return {
+        "correct": said_scam == example["is_scam"],
+        "is_scam": example["is_scam"],
+        "signs": [SIGN_LABELS[sign] for sign in example["signs"]],
+        "explanation": example["explanation"],
+    }
 
 
 # CSS and JavaScript for the page, at /static/style.css and /static/app.js.
